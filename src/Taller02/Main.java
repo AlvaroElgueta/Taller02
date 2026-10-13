@@ -23,6 +23,127 @@ public class Main {
 		System.out.println("Archivos cargados con exito!\r\n"
 				+ "- " + contParticipantes + " participantes.\r\n"
 				+ "- " + contConsumos + " consumos.");
+		s = new Scanner(System.in);
+		menu();
+		s.close();
+	}
+
+	//se encarga de mostrar el menu principal
+	private static void menu() {
+		boolean salir = false;
+		do {
+			System.out.println("\r\n===== LA FONDA DEL PAPU =====\r\n"
+					+ "Registros cargados: " + contConsumos + "\r\n"
+					+ "1) Ver registros\r\n"
+					+ "2) Actualizar registros\r\n"
+					+ "3) Calcular metricas\r\n"
+					+ "4) Salir\r\n");
+			int opcion = leerOpcion();
+			switch (opcion) {
+			case 1: {
+				menuVerRegistros();
+				break;
+			}
+			case 2: {
+				System.out.println("Opcion aun no disponible\r\n");
+				break;
+			}
+			case 3: {
+				System.out.println("Opcion aun no disponible\r\n");
+				break;
+			}
+			case 4: {
+				System.out.println("Hasta luego...");
+				salir = true;
+				break;
+			}
+			default: {
+				System.out.println("Debe ser una opcion valida(1/2/3/4)\r\n");
+				break;
+			}
+			}
+		} while (!salir);
+	}
+
+	//se encarga de mostrar el menu de registros
+	private static void menuVerRegistros() {
+		boolean salir = false;
+		do {
+			System.out.println("\r\n===== VER REGISTROS =====\r\n"
+					+ "1) Choripanes\r\n"
+					+ "2) Terremotos\r\n"
+					+ "3) Volver al menu principal\r\n");
+			int opcion = leerOpcion();
+			switch (opcion) {
+			case 1: {
+				mostrarChoripanes();
+				break;
+			}
+			case 2: {
+				mostrarTerremotos();
+				break;
+			}
+			case 3: {
+				salir = true;
+				break;
+			}
+			default: {
+				System.out.println("Debe ser una opcion valida(1/2/3)\r\n");
+				break;
+			}
+			}
+		} while (!salir);
+	}
+
+	//muestra todos los choripanes registrados
+	private static void mostrarChoripanes() {
+		int cantidad = 0;
+		System.out.println("\r\n===== CHORIPANES =====");
+		for (int i = 0; i < contConsumos; i++) {
+			if (consumos[i] instanceof Choripan) {
+				Choripan choripan = (Choripan) consumos[i];
+				cantidad++;
+				System.out.println(cantidad + ") " + choripan.getConsumidor().getNombre()
+						+ " | " + choripan.getLargo() + " cm x " + choripan.getAncho()
+						+ " cm | " + choripan.getFecha() + " | "
+						+ redondear(choripan.calcularKcal()) + " KCal");
+			}
+		}
+		System.out.println("Total: " + cantidad + " choripanes registrados\r\n");
+	}
+
+	//muestra todos los terremotos registrados
+	private static void mostrarTerremotos() {
+		int cantidad = 0;
+		double totalLitros = 0;
+		System.out.println("\r\n===== TERREMOTOS =====");
+		for (int i = 0; i < contConsumos; i++) {
+			if (consumos[i] instanceof Terremoto) {
+				Terremoto terremoto = (Terremoto) consumos[i];
+				cantidad++;
+				totalLitros += terremoto.getLitros();
+				System.out.println(cantidad + ") " + terremoto.getConsumidor().getNombre()
+						+ " | " + terremoto.getLitros() + " L | " + terremoto.getFecha()
+						+ " | " + redondear(terremoto.calcularKcal()) + " KCal");
+			}
+		}
+		System.out.println("Total: " + cantidad + " terremotos registrados ("
+				+ redondear(totalLitros) + " L)\r\n");
+	}
+
+	//redondea un numero a dos decimales
+	private static double redondear(double numero) {
+		return Math.round(numero * 100.0) / 100.0;
+	}
+
+	//valida que el usuario ingrese un numero
+	private static int leerOpcion() {
+		try {
+			System.out.print("Ingrese opcion: ");
+			return Integer.parseInt(s.nextLine());
+		} catch (NumberFormatException e) {
+			return -1;
+		}
 	}
 
 	//se encarga de cargar los participantes
