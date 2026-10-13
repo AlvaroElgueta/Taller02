@@ -23,7 +23,11 @@ Taller02/
 |-- src/
 |   |-- module-info.java
 |   `-- Taller02/
-|       `-- Main.java
+|       |-- Main.java
+|       |-- Participante.java
+|       |-- Consumo.java
+|       |-- Choripan.java
+|       `-- Terremoto.java
 |-- Participantes.txt
 |-- Consumido.txt
 `-- README.md
