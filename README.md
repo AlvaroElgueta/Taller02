@@ -12,7 +12,6 @@ archivo `Consumido.txt`.
 ## Integrantes
 
 - Alvaro Elgueta - Rut: 21.806.097-8 - Usuario GitHub: [AlvaroElgueta](https://github.com/AlvaroElgueta)
-- Catalina Fica    - Rut: 21.779.663-6 - Usuario GitHub: [panconmayo-pixel](https://github.com/panconmayo-pixel)
 
 ## Estructura del proyecto
 

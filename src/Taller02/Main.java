@@ -1,9 +1,10 @@
 // Integrante1: Alvaro Elgueta - Rut: 21.806.097-8 - Carrera: ICCI
-// Integrante2: Catalina Fica  - Rut: 21.779.663-6 - Carrera: ICCI
 
 package Taller02;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 
@@ -45,7 +46,7 @@ public class Main {
 				break;
 			}
 			case 2: {
-				System.out.println("Opcion aun no disponible\r\n");
+				menuActualizarRegistros();
 				break;
 			}
 			case 3: {
@@ -63,6 +64,126 @@ public class Main {
 			}
 			}
 		} while (!salir);
+	}
+
+	//se encarga de mostrar el menu para actualizar registros
+	private static void menuActualizarRegistros() {
+		boolean salir = false;
+		do {
+			System.out.println("\r\n===== ACTUALIZAR REGISTROS =====\r\n"
+					+ "1) Agregar\r\n"
+					+ "2) Editar\r\n"
+					+ "3) Eliminar\r\n"
+					+ "4) Volver al menu principal\r\n");
+			int opcion = leerOpcion();
+			switch (opcion) {
+			case 1: {
+				agregarRegistro();
+				break;
+			}
+			case 2: {
+				System.out.println("Opcion aun no disponible\r\n");
+				break;
+			}
+			case 3: {
+				System.out.println("Opcion aun no disponible\r\n");
+				break;
+			}
+			case 4: {
+				salir = true;
+				break;
+			}
+			default: {
+				System.out.println("Debe ser una opcion valida(1/2/3/4)\r\n");
+				break;
+			}
+			}
+		} while (!salir);
+	}
+
+	//se encarga de agregar un nuevo consumo
+	private static void agregarRegistro() {
+		if (contConsumos >= consumos.length) {
+			System.out.println("No hay espacio para guardar mas consumos\r\n");
+			return;
+		}
+		System.out.println("\r\nTipo de registro:\r\n"
+				+ "1) Choripan\r\n"
+				+ "2) Terremoto\r\n"
+				+ "3) Cancelar\r\n");
+		int opcion = leerOpcion();
+		if (opcion == 3) {
+			return;
+		}
+		if (opcion != 1 && opcion != 2) {
+			System.out.println("Debe ser una opcion valida(1/2/3)\r\n");
+			return;
+		}
+
+		Participante consumidor = seleccionarParticipante();
+		if (consumidor == null) {
+			return;
+		}
+
+		if (opcion == 1) {
+			int largo = leerEnteroPositivo("Largo del choripan (cm): ");
+			int ancho = leerEnteroPositivo("Ancho del choripan (cm): ");
+			String fecha = leerFecha();
+			consumos[contConsumos] = new Choripan(consumidor, fecha, largo, ancho);
+		} else {
+			double litros = leerDoublePositivo("Litros del terremoto: ");
+			String fecha = leerFecha();
+			consumos[contConsumos] = new Terremoto(consumidor, fecha, litros);
+		}
+		contConsumos++;
+
+		if (guardarConsumos()) {
+			System.out.println("Registro agregado y guardado en Consumido.txt\r\n");
+		}
+	}
+
+	//muestra los participantes y retorna el seleccionado
+	private static Participante seleccionarParticipante() {
+		System.out.println("\r\nParticipantes disponibles:");
+		for (int i = 0; i < contParticipantes; i++) {
+			System.out.println((i + 1) + ") " + participantes[i].getNombre());
+		}
+		System.out.println("0) Cancelar");
+		while (true) {
+			int opcion = leerOpcion();
+			if (opcion == 0) {
+				return null;
+			}
+			if (opcion >= 1 && opcion <= contParticipantes) {
+				return participantes[opcion - 1];
+			}
+			System.out.println("Debe seleccionar un participante valido");
+		}
+	}
+
+	//se encarga de guardar los consumos en el archivo
+	private static boolean guardarConsumos() {
+		try {
+			BufferedWriter escritor = new BufferedWriter(new FileWriter("Consumido.txt"));
+			for (int i = 0; i < contConsumos; i++) {
+				if (consumos[i] instanceof Choripan) {
+					Choripan choripan = (Choripan) consumos[i];
+					escritor.write("Choripan;" + choripan.getConsumidor().getNombre() + ";"
+							+ choripan.getLargo() + ";" + choripan.getAncho() + ";"
+							+ choripan.getFecha());
+				} else if (consumos[i] instanceof Terremoto) {
+					Terremoto terremoto = (Terremoto) consumos[i];
+					escritor.write("Terremoto;" + terremoto.getConsumidor().getNombre() + ";"
+							+ terremoto.getLitros() + ";" + terremoto.getFecha());
+				}
+				escritor.newLine();
+			}
+			escritor.close();
+			return true;
+		} catch (IOException e) {
+			System.out.println("No se pudieron guardar los cambios en Consumido.txt\r\n");
+			return false;
+		}
 	}
 
 	//se encarga de mostrar el menu de registros
@@ -140,9 +261,66 @@ public class Main {
 	private static int leerOpcion() {
 		try {
 			System.out.print("Ingrese opcion: ");
-			return Integer.parseInt(s.nextLine());
+			return Integer.parseInt(s.nextLine().trim());
 		} catch (NumberFormatException e) {
 			return -1;
+		}
+	}
+
+	//lee un numero entero mayor a cero
+	private static int leerEnteroPositivo(String mensaje) {
+		while (true) {
+			try {
+				System.out.print(mensaje);
+				int numero = Integer.parseInt(s.nextLine().trim());
+				if (numero > 0) {
+					return numero;
+				}
+			} catch (NumberFormatException e) {
+			}
+			System.out.println("Debe ingresar un numero mayor a cero");
+		}
+	}
+
+	//lee un numero decimal mayor a cero
+	private static double leerDoublePositivo(String mensaje) {
+		while (true) {
+			try {
+				System.out.print(mensaje);
+				double numero = Double.parseDouble(s.nextLine().trim());
+				if (numero > 0) {
+					return numero;
+				}
+			} catch (NumberFormatException e) {
+			}
+			System.out.println("Debe ingresar un numero mayor a cero");
+		}
+	}
+
+	//lee una fecha con el formato correcto
+	private static String leerFecha() {
+		while (true) {
+			System.out.print("Fecha (YYYY-MM-DD): ");
+			String fecha = s.nextLine().trim();
+			if (fechaValida(fecha)) {
+				return fecha;
+			}
+			System.out.println("La fecha debe tener el formato YYYY-MM-DD");
+		}
+	}
+
+	//valida el formato basico de una fecha
+	private static boolean fechaValida(String fecha) {
+		if (fecha.length() != 10 || fecha.charAt(4) != '-' || fecha.charAt(7) != '-') {
+			return false;
+		}
+		try {
+			int anio = Integer.parseInt(fecha.substring(0, 4));
+			int mes = Integer.parseInt(fecha.substring(5, 7));
+			int dia = Integer.parseInt(fecha.substring(8, 10));
+			return anio > 0 && mes >= 1 && mes <= 12 && dia >= 1 && dia <= 31;
+		} catch (NumberFormatException e) {
+			return false;
 		}
 	}
 
