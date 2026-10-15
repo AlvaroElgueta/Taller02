@@ -82,11 +82,11 @@ public class Main {
 				break;
 			}
 			case 2: {
-				System.out.println("Opcion aun no disponible\r\n");
+				editarRegistro();
 				break;
 			}
 			case 3: {
-				System.out.println("Opcion aun no disponible\r\n");
+				eliminarRegistro();
 				break;
 			}
 			case 4: {
@@ -140,6 +140,148 @@ public class Main {
 		if (guardarConsumos()) {
 			System.out.println("Registro agregado y guardado en Consumido.txt\r\n");
 		}
+	}
+
+	//se encarga de editar un consumo
+	private static void editarRegistro() {
+		int tipo = seleccionarTipoRegistro("editar");
+		if (tipo == -1) {
+			return;
+		}
+		int indice = seleccionarRegistro(tipo, "editar");
+		if (indice == -1) {
+			return;
+		}
+
+		Consumo consumo = consumos[indice];
+		System.out.println("Registro actual -> " + textoRegistro(consumo));
+		System.out.println("Deje el campo vacio para mantener el valor actual");
+		consumo.setConsumidor(leerParticipanteOpcional(consumo.getConsumidor()));
+
+		if (consumo instanceof Choripan) {
+			Choripan choripan = (Choripan) consumo;
+			choripan.setLargo(leerEnteroOpcional("Largo [" + choripan.getLargo() + "]: ",
+					choripan.getLargo()));
+			choripan.setAncho(leerEnteroOpcional("Ancho [" + choripan.getAncho() + "]: ",
+					choripan.getAncho()));
+		} else if (consumo instanceof Terremoto) {
+			Terremoto terremoto = (Terremoto) consumo;
+			terremoto.setLitros(leerDoubleOpcional("Litros [" + terremoto.getLitros() + "]: ",
+					terremoto.getLitros()));
+		}
+		consumo.setFecha(leerFechaOpcional(consumo.getFecha()));
+
+		if (guardarConsumos()) {
+			System.out.println("Registro actualizado y guardado en Consumido.txt\r\n");
+		}
+	}
+
+	//se encarga de eliminar un consumo
+	private static void eliminarRegistro() {
+		int tipo = seleccionarTipoRegistro("eliminar");
+		if (tipo == -1) {
+			return;
+		}
+		int indice = seleccionarRegistro(tipo, "eliminar");
+		if (indice == -1) {
+			return;
+		}
+
+		System.out.println("Registro seleccionado -> " + textoRegistro(consumos[indice]));
+		while (true) {
+			System.out.print("Confirma la eliminacion? (s/n): ");
+			String respuesta = s.nextLine().trim();
+			if (respuesta.equalsIgnoreCase("n")) {
+				return;
+			}
+			if (respuesta.equalsIgnoreCase("s")) {
+				break;
+			}
+			System.out.println("Debe responder con s o n");
+		}
+
+		for (int i = indice; i < contConsumos - 1; i++) {
+			consumos[i] = consumos[i + 1];
+		}
+		contConsumos--;
+		consumos[contConsumos] = null;
+
+		if (guardarConsumos()) {
+			System.out.println("Registro eliminado y guardado en Consumido.txt\r\n");
+		}
+	}
+
+	//permite elegir el tipo de registro que se quiere modificar
+	private static int seleccionarTipoRegistro(String accion) {
+		System.out.println("\r\nTipo de registro a " + accion + ":\r\n"
+				+ "1) Choripan\r\n"
+				+ "2) Terremoto\r\n"
+				+ "3) Cancelar\r\n");
+		int opcion = leerOpcion();
+		if (opcion == 3) {
+			return -1;
+		}
+		if (opcion != 1 && opcion != 2) {
+			System.out.println("Debe ser una opcion valida(1/2/3)\r\n");
+			return -1;
+		}
+		return opcion;
+	}
+
+	//muestra los registros de un tipo y retorna la posicion seleccionada
+	private static int seleccionarRegistro(int tipo, String accion) {
+		int cantidad = 0;
+		System.out.println();
+		for (int i = 0; i < contConsumos; i++) {
+			if ((tipo == 1 && consumos[i] instanceof Choripan)
+					|| (tipo == 2 && consumos[i] instanceof Terremoto)) {
+				cantidad++;
+				System.out.println(cantidad + ") " + textoRegistro(consumos[i]));
+			}
+		}
+		if (cantidad == 0) {
+			System.out.println("No hay registros de este tipo\r\n");
+			return -1;
+		}
+
+		while (true) {
+			System.out.print("Seleccione el registro a " + accion + " (0 para cancelar): ");
+			int opcion;
+			try {
+				opcion = Integer.parseInt(s.nextLine().trim());
+			} catch (NumberFormatException e) {
+				opcion = -1;
+			}
+			if (opcion == 0) {
+				return -1;
+			}
+			if (opcion >= 1 && opcion <= cantidad) {
+				int posicion = 0;
+				for (int i = 0; i < contConsumos; i++) {
+					if ((tipo == 1 && consumos[i] instanceof Choripan)
+							|| (tipo == 2 && consumos[i] instanceof Terremoto)) {
+						posicion++;
+						if (posicion == opcion) {
+							return i;
+						}
+					}
+				}
+			}
+			System.out.println("No existe un registro con ese numero");
+		}
+	}
+
+	//retorna la informacion de un consumo
+	private static String textoRegistro(Consumo consumo) {
+		if (consumo instanceof Choripan) {
+			Choripan choripan = (Choripan) consumo;
+			return "Choripan | " + choripan.getConsumidor().getNombre() + " | "
+					+ choripan.getLargo() + " cm x " + choripan.getAncho() + " cm | "
+					+ choripan.getFecha();
+		}
+		Terremoto terremoto = (Terremoto) consumo;
+		return "Terremoto | " + terremoto.getConsumidor().getNombre() + " | "
+				+ terremoto.getLitros() + " L | " + terremoto.getFecha();
 	}
 
 	//muestra los participantes y retorna el seleccionado
@@ -297,11 +439,80 @@ public class Main {
 		}
 	}
 
+	//lee un participante o mantiene el actual si queda vacio
+	private static Participante leerParticipanteOpcional(Participante actual) {
+		while (true) {
+			System.out.print("Consumidor [" + actual.getNombre() + "]: ");
+			String nombre = s.nextLine().trim();
+			if (nombre.equalsIgnoreCase("")) {
+				return actual;
+			}
+			Participante participante = buscarParticipante(nombre);
+			if (participante != null) {
+				return participante;
+			}
+			System.out.println("El participante no esta registrado");
+		}
+	}
+
+	//lee un entero o mantiene el valor actual si queda vacio
+	private static int leerEnteroOpcional(String mensaje, int actual) {
+		while (true) {
+			System.out.print(mensaje);
+			String texto = s.nextLine().trim();
+			if (texto.equalsIgnoreCase("")) {
+				return actual;
+			}
+			try {
+				int numero = Integer.parseInt(texto);
+				if (numero > 0) {
+					return numero;
+				}
+			} catch (NumberFormatException e) {
+			}
+			System.out.println("Debe ingresar un numero mayor a cero");
+		}
+	}
+
+	//lee un decimal o mantiene el valor actual si queda vacio
+	private static double leerDoubleOpcional(String mensaje, double actual) {
+		while (true) {
+			System.out.print(mensaje);
+			String texto = s.nextLine().trim();
+			if (texto.equalsIgnoreCase("")) {
+				return actual;
+			}
+			try {
+				double numero = Double.parseDouble(texto);
+				if (numero > 0) {
+					return numero;
+				}
+			} catch (NumberFormatException e) {
+			}
+			System.out.println("Debe ingresar un numero mayor a cero");
+		}
+	}
+
 	//lee una fecha con el formato correcto
 	private static String leerFecha() {
 		while (true) {
 			System.out.print("Fecha (YYYY-MM-DD): ");
 			String fecha = s.nextLine().trim();
+			if (fechaValida(fecha)) {
+				return fecha;
+			}
+			System.out.println("La fecha debe tener el formato YYYY-MM-DD");
+		}
+	}
+
+	//lee una fecha o mantiene la actual si queda vacio
+	private static String leerFechaOpcional(String actual) {
+		while (true) {
+			System.out.print("Fecha [" + actual + "]: ");
+			String fecha = s.nextLine().trim();
+			if (fecha.equalsIgnoreCase("")) {
+				return actual;
+			}
 			if (fechaValida(fecha)) {
 				return fecha;
 			}
