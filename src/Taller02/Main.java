@@ -50,7 +50,7 @@ public class Main {
 				break;
 			}
 			case 3: {
-				System.out.println("Opcion aun no disponible\r\n");
+				menuMetricas();
 				break;
 			}
 			case 4: {
@@ -64,6 +64,195 @@ public class Main {
 			}
 			}
 		} while (!salir);
+	}
+
+	//se encarga de mostrar el menu de metricas
+	private static void menuMetricas() {
+		boolean salir = false;
+		do {
+			System.out.println("\r\n===== CALCULAR METRICAS =====\r\n"
+					+ "1) Choripanes comidos en total\r\n"
+					+ "2) Terremotos tomados en total\r\n"
+					+ "3) Choripanes comidos por usuario\r\n"
+					+ "4) Terremotos tomados por usuario\r\n"
+					+ "5) KCal consumidas por usuario\r\n"
+					+ "6) Dias ebrio por usuario\r\n"
+					+ "7) Volver al menu principal\r\n");
+			int opcion = leerOpcion();
+			switch (opcion) {
+			case 1: {
+				mostrarTotalChoripanes();
+				break;
+			}
+			case 2: {
+				mostrarTotalTerremotos();
+				break;
+			}
+			case 3: {
+				mostrarChoripanesPorUsuario();
+				break;
+			}
+			case 4: {
+				mostrarTerremotosPorUsuario();
+				break;
+			}
+			case 5: {
+				mostrarKcalPorUsuario();
+				break;
+			}
+			case 6: {
+				mostrarDiasEbrioPorUsuario();
+				break;
+			}
+			case 7: {
+				salir = true;
+				break;
+			}
+			default: {
+				System.out.println("Debe ser una opcion valida(1/2/3/4/5/6/7)\r\n");
+				break;
+			}
+			}
+		} while (!salir);
+	}
+
+	//muestra la cantidad total de choripanes
+	private static void mostrarTotalChoripanes() {
+		int cantidad = 0;
+		for (int i = 0; i < contConsumos; i++) {
+			if (consumos[i] instanceof Choripan) {
+				cantidad++;
+			}
+		}
+		System.out.println("Total de choripanes comidos: " + cantidad + "\r\n");
+	}
+
+	//muestra la cantidad total de terremotos y litros
+	private static void mostrarTotalTerremotos() {
+		int cantidad = 0;
+		double litros = 0;
+		for (int i = 0; i < contConsumos; i++) {
+			if (consumos[i] instanceof Terremoto) {
+				Terremoto terremoto = (Terremoto) consumos[i];
+				cantidad++;
+				litros += terremoto.getLitros();
+			}
+		}
+		System.out.println("Total de terremotos tomados: " + cantidad + " ("
+				+ redondear(litros) + " litros en total)\r\n");
+	}
+
+	//muestra la cantidad de choripanes de cada participante
+	private static void mostrarChoripanesPorUsuario() {
+		System.out.println("\r\n===== CHORIPANES POR USUARIO =====");
+		for (int i = 0; i < contParticipantes; i++) {
+			int cantidad = 0;
+			for (int j = 0; j < contConsumos; j++) {
+				if (consumos[j] instanceof Choripan
+						&& consumos[j].getConsumidor() == participantes[i]) {
+					cantidad++;
+				}
+			}
+			System.out.println(participantes[i].getNombre() + ": " + cantidad);
+		}
+		System.out.println();
+	}
+
+	//muestra la cantidad de terremotos y litros de cada participante
+	private static void mostrarTerremotosPorUsuario() {
+		System.out.println("\r\n===== TERREMOTOS POR USUARIO =====");
+		for (int i = 0; i < contParticipantes; i++) {
+			int cantidad = 0;
+			double litros = 0;
+			for (int j = 0; j < contConsumos; j++) {
+				if (consumos[j] instanceof Terremoto
+						&& consumos[j].getConsumidor() == participantes[i]) {
+					Terremoto terremoto = (Terremoto) consumos[j];
+					cantidad++;
+					litros += terremoto.getLitros();
+				}
+			}
+			System.out.println(participantes[i].getNombre() + ": " + cantidad
+					+ " terremotos (" + redondear(litros) + " L)");
+		}
+		System.out.println();
+	}
+
+	//muestra las calorias consumidas por cada participante
+	private static void mostrarKcalPorUsuario() {
+		double totalFonda = 0;
+		System.out.println("\r\n===== KCAL POR USUARIO =====");
+		for (int i = 0; i < contParticipantes; i++) {
+			double kcalChoripanes = 0;
+			double kcalTerremotos = 0;
+			for (int j = 0; j < contConsumos; j++) {
+				if (consumos[j].getConsumidor() == participantes[i]) {
+					if (consumos[j] instanceof Choripan) {
+						kcalChoripanes += consumos[j].calcularKcal();
+					} else if (consumos[j] instanceof Terremoto) {
+						kcalTerremotos += consumos[j].calcularKcal();
+					}
+				}
+			}
+			double totalUsuario = kcalChoripanes + kcalTerremotos;
+			totalFonda += totalUsuario;
+			System.out.println(participantes[i].getNombre() + " -> Choripanes: "
+					+ redondear(kcalChoripanes) + " KCal | Terremotos: "
+					+ redondear(kcalTerremotos) + " KCal | Total: "
+					+ redondear(totalUsuario) + " KCal");
+		}
+		System.out.println("Consumo total de la fonda: " + redondear(totalFonda)
+				+ " KCal\r\n");
+	}
+
+	//muestra los dias en que cada participante tomo dos litros o mas
+	private static void mostrarDiasEbrioPorUsuario() {
+		System.out.println("\r\n===== DIAS EBRIO POR USUARIO =====");
+		System.out.println("Se cuenta un dia ebrio con 2 L o mas en la misma fecha\r\n");
+		for (int i = 0; i < contParticipantes; i++) {
+			String[] fechas = new String[200];
+			double[] litrosPorFecha = new double[200];
+			int contFechas = 0;
+
+			for (int j = 0; j < contConsumos; j++) {
+				if (consumos[j] instanceof Terremoto
+						&& consumos[j].getConsumidor() == participantes[i]) {
+					Terremoto terremoto = (Terremoto) consumos[j];
+					int posicion = -1;
+					for (int k = 0; k < contFechas; k++) {
+						if (fechas[k].equalsIgnoreCase(terremoto.getFecha())) {
+							posicion = k;
+							break;
+						}
+					}
+					if (posicion == -1) {
+						fechas[contFechas] = terremoto.getFecha();
+						litrosPorFecha[contFechas] = terremoto.getLitros();
+						contFechas++;
+					} else {
+						litrosPorFecha[posicion] += terremoto.getLitros();
+					}
+				}
+			}
+
+			int diasEbrio = 0;
+			String detalle = "";
+			for (int j = 0; j < contFechas; j++) {
+				if (litrosPorFecha[j] >= 2) {
+					diasEbrio++;
+					if (!detalle.equalsIgnoreCase("")) {
+						detalle += ", ";
+					}
+					detalle += fechas[j] + " (" + redondear(litrosPorFecha[j]) + " L)";
+				}
+			}
+			if (detalle.equalsIgnoreCase("")) {
+				detalle = "-";
+			}
+			System.out.println(participantes[i].getNombre() + ": " + diasEbrio
+					+ " dias | " + detalle);
+		}
+		System.out.println();
 	}
 
 	//se encarga de mostrar el menu para actualizar registros
